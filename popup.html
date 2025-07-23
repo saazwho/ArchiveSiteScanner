@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Archeus</title>
+
+  <!-- Font Awesome v6 for folder icons -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    rel="stylesheet"
+  />
+
+  <!-- Tailwind (optional) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Your custom styles -->
+  <link href="styles.css" rel="stylesheet" />
+</head>
+<body class="popup-body">
+<div class="header">
+  <!-- replace the <img> with: -->
+  <i class="fas fa-server logo-icon"></i>
+  <h1 class="popup-title">Archive Site Scanner</h1>
+</div>
+
+
+  <button id="scanBtn" class="button-scan">
+    Query Archive
+  </button>
+
+  <div id="results" class="results-list"></div>
+
+  <button id="exportBtn" class="button-export hidden">
+    📁 Export URLs
+  </button>
+
+  <script src="popup.js"></script>
+</body>
+</html>

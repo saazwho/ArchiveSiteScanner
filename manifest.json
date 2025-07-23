@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Alternate Site Scanner",
+  "version": "1.0",
+  "permissions": ["storage", "activeTab"],
+  "background": {
+    "service_worker": "popup.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ]
+}
