@@ -1,40 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-  
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Archivum</title>
 
-  <!-- Font Awesome v6 for folder icons -->
+  <!-- Font Awesome v6 for icons -->
   <link
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     rel="stylesheet"
   />
 
-  <!-- Tailwind (optional) -->
+  <!-- Tailwind (optional - for utility classes) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Your custom styles -->
+  <!-- Your enhanced styles -->
   <link href="styles.css" rel="stylesheet" />
 </head>
-<body class="popup-body">
-<div class="header">
-  <!-- replace the <img> with: -->
-  <i class="fas fa-server logo-icon"></i>
-  <h1 class="popup-title">Archivum</h1>
-</div>
+<body>
+  <div class="popup-wrapper">
+    <div class="popup-body">
+      <!-- Enhanced Header -->
+      <div class="header">
+        <i class="fas fa-server logo-icon" title="Archivum - Site Scanner"></i>
+        <div>
+          <h1 class="popup-title">Archivum</h1>
+          <p class="text-sm text-muted opacity-75">Archive Explorer</p>
+        </div>
+      </div>
 
+      <!-- Enhanced Scan Button -->
+      <button id="scanBtn" class="button-scan" title="Query the current website">
+        <i class="fas fa-search mr-2"></i>
+        Query Current URL
+      </button>
 
-  <button id="scanBtn" class="button-scan">
-    Query Current URL
-  </button>
+      <!-- Results Container -->
+      <div id="results" class="results-list">
+        <!-- Initial welcome message -->
+        <div class="text-center text-gray-400 py-8">
+          <div class="mb-4">
+            <i class="fas fa-globe text-4xl mb-3 text-gray-500 opacity-50"></i>
+          </div>
+          <p class="mb-2 font-medium">Welcome to Archivum</p>
+          <p class="text-sm opacity-75">Discover archived versions of any website</p>
+          <div class="mt-4 text-xs opacity-50">
+            <i class="fas fa-info-circle mr-1"></i>
+            Click "Query Current URL" to get started
+          </div>
+        </div>
+      </div>
 
-  <div id="results" class="results-list"></div>
+      <!-- Enhanced Export Button -->
+      <button id="exportBtn" class="button-export hidden" title="Download all URLs as text file">
+        <i class="fas fa-download mr-2"></i>
+        Export URLs
+      </button>
 
-  <button id="exportBtn" class="button-export hidden">
-    📁 Export URLs
-  </button>
+      <!-- Footer info -->
+      <div class="text-center text-xs opacity-40 mt-2">
+        <i class="fas fa-database mr-1"></i>
+        Powered by Internet Archive
+      </div>
+    </div>
+  </div>
 
   <script src="popup.js"></script>
 </body>
