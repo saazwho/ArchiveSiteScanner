@@ -18,21 +18,78 @@ const exportBtn   = document.getElementById('exportBtn');
 let globalTree = null;
 let allUrls    = [];
 
+// Cache management constants
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+// Clean up expired cache entries
+async function cleanExpiredCache() {
+  try {
+    const result = await chrome.storage.local.get('archivum_cache');
+    const cache = result.archivum_cache || {};
+    const now = Date.now();
+    let hasExpired = false;
+
+    for (const [host, data] of Object.entries(cache)) {
+      if (now - data.timestamp > CACHE_DURATION) {
+        delete cache[host];
+        hasExpired = true;
+      }
+    }
+
+    if (hasExpired) {
+      await chrome.storage.local.set({ archivum_cache: cache });
+    }
+  } catch (err) {
+    console.warn('Failed to clean cache:', err);
+  }
+}
+
+// Get cached results for a host
+async function getCachedResults(host) {
+  try {
+    const result = await chrome.storage.local.get('archivum_cache');
+    const cache = result.archivum_cache || {};
+    const hostCache = cache[host];
+    
+    if (hostCache && (Date.now() - hostCache.timestamp < CACHE_DURATION)) {
+      return hostCache;
+    }
+    return null;
+  } catch (err) {
+    console.warn('Failed to get cache:', err);
+    return null;
+  }
+}
+
+// Store results in cache
+async function setCachedResults(host, urls, tree) {
+  try {
+    const result = await chrome.storage.local.get('archivum_cache');
+    const cache = result.archivum_cache || {};
+    
+    cache[host] = {
+      timestamp: Date.now(),
+      urls: urls,
+      tree: tree
+    };
+    
+    await chrome.storage.local.set({ archivum_cache: cache });
+  } catch (err) {
+    console.warn('Failed to set cache:', err);
+  }
+}
+
 scanBtn.addEventListener('click', async () => {
   // clear search input
   const searchInput = document.getElementById('searchInput');
   searchInput.value = '';
-
-  resultsList.innerHTML = `
-    <div class="flex items-center justify-center gap-2 py-4">
-      <i class="fas fa-spinner fa-spin text-white text-3xl"></i>
-      <span class="text-white font-medium">Polling archive...</span>
-    </div>
-  `;
   exportBtn.classList.add('hidden');
   window._scannedUrls = [];
 
   try {
+    // Clean expired cache first
+    await cleanExpiredCache();
+
     // determine host & URL
     let host, urlHref;
     if (window.chrome?.tabs?.query) {
@@ -43,6 +100,41 @@ scanBtn.addEventListener('click', async () => {
       host    = new URL(window.location.href).hostname;
       urlHref = window.location.href;
     }
+
+    // Check for cached results first
+    const cachedResults = await getCachedResults(host);
+    if (cachedResults) {
+      resultsList.innerHTML = `
+        <div class="flex items-center justify-center gap-2 py-2 mb-2 bg-green-900/30 rounded">
+          <i class="fas fa-refresh text-green-400"></i>
+          <span class="text-green-300 text-sm">Refreshing from cache (${Math.round((Date.now() - cachedResults.timestamp) / 60000)} min old)</span>
+        </div>
+      `;
+      
+      allUrls = cachedResults.urls;
+      globalTree = cachedResults.tree;
+      window._scannedUrls = cachedResults.urls;
+      
+      // Add the tree display after a brief delay to show the cache message
+      setTimeout(() => {
+        const cacheMessage = resultsList.querySelector('.bg-green-900\\/30');
+        if (cacheMessage) {
+          cacheMessage.remove();
+        }
+        resultsList.appendChild(renderTreeLazy(globalTree));
+        exportBtn.classList.remove('hidden');
+      }, 1000);
+      
+      return;
+    }
+
+    // No cache available, fetch fresh data
+    resultsList.innerHTML = `
+      <div class="flex items-center justify-center gap-2 py-4">
+        <i class="fas fa-spinner fa-spin text-white text-3xl"></i>
+        <span class="text-white font-medium">Polling archive...</span>
+      </div>
+    `;
 
     let urls = [];
     if (host === 'localhost' || host === '127.0.0.1') {
@@ -97,6 +189,9 @@ scanBtn.addEventListener('click', async () => {
     if (Object.keys(rootFiles).length) inner['/'] = rootFiles;
     Object.assign(inner, rootDirs);
     globalTree = { '/': inner };
+
+    // Cache the results
+    await setCachedResults(host, urls, globalTree);
 
     // render full tree
     resultsList.innerHTML = '';
@@ -219,6 +314,67 @@ function renderTreeLazy(subtree, depth = 0) {
   return ul;
 }
 
+// Initialize popup - load cached results if available
+async function initializePopup() {
+  try {
+    // Clean expired cache first
+    await cleanExpiredCache();
+
+    // Determine current host
+    let host;
+    if (window.chrome?.tabs?.query) {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      host = new URL(tab.url).hostname;
+    } else {
+      host = new URL(window.location.href).hostname;
+    }
+
+    // Check for cached results
+    const cachedResults = await getCachedResults(host);
+    if (cachedResults) {
+      // Display cached results immediately
+      allUrls = cachedResults.urls;
+      globalTree = cachedResults.tree;
+      window._scannedUrls = cachedResults.urls;
+
+      resultsList.innerHTML = `
+        <div class="flex items-center justify-center gap-2 py-2 mb-2 bg-blue-900/30 rounded">
+          <i class="fas fa-database text-blue-400"></i>
+          <span class="text-blue-300 text-sm">Cached results loaded (${Math.round((Date.now() - cachedResults.timestamp) / 60000)} min old)</span>
+        </div>
+      `;
+
+      // Add the tree display after a brief delay
+      setTimeout(() => {
+        const cacheMessage = resultsList.querySelector('.bg-blue-900\\/30');
+        if (cacheMessage) {
+          cacheMessage.remove();
+        }
+        resultsList.appendChild(renderTreeLazy(globalTree));
+        exportBtn.classList.remove('hidden');
+      }, 1500);
+    } else {
+      // No cached results - show helpful message
+      resultsList.innerHTML = `
+        <div class="text-center text-gray-400 py-8">
+          <i class="fas fa-search text-4xl mb-3 text-gray-500"></i>
+          <p class="mb-2">No cached results found</p>
+          <p class="text-sm">Click "Query Current URL" to scan this site</p>
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.warn('Failed to initialize popup:', err);
+    resultsList.innerHTML = `
+      <div class="text-center text-gray-400 py-8">
+        <i class="fas fa-search text-4xl mb-3 text-gray-500"></i>
+        <p class="mb-2">Ready to scan</p>
+        <p class="text-sm">Click "Query Current URL" to get started</p>
+      </div>
+    `;
+  }
+}
+
 // Filter logic: show only files matching extension
 const searchInput = document.getElementById('searchInput');
 searchInput.addEventListener('input', () => {
@@ -253,3 +409,6 @@ searchInput.addEventListener('input', () => {
   resultsList.appendChild(ul);
   exportBtn.classList.add('hidden');
 });
+
+// Initialize when popup loads
+document.addEventListener('DOMContentLoaded', initializePopup);
