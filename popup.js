@@ -6,7 +6,7 @@ const resultsList = document.getElementById('results');
   const input = document.createElement('input');
   input.id = 'searchInput';
   input.type = 'text';
-  input.placeholder = 'Filter by extension (e.g. .html)';
+  input.placeholder = 'Filter results by extension (e.g. .html)';
   input.className = 'w-full p-2 rounded border border-gray-300 mb-2';
   container.appendChild(input);
   resultsList.parentNode.insertBefore(container, resultsList);
@@ -127,7 +127,7 @@ function buildFlatTree(urls) {
   urls.forEach(raw => {
     try {
       const parts = new URL(raw).pathname.split('/').filter(Boolean);
-      if (!parts.length || raw.endsWith('/')) parts.push('index.html');
+      if (!parts.length || raw.endsWith('/')) parts.push(raw);
       let cur = tree;
       parts.forEach((seg, i) => {
         if (!cur[seg]) cur[seg] = i === parts.length - 1 ? raw : {};
