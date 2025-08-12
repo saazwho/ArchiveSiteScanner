@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Alternate Site Scanner",
+  "name": "Archivum",
   "version": "1.0",
   "permissions": ["storage", "activeTab"],
   "background": {
