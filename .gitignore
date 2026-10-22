@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+node_modules/
+*.log
+.env
+.env.*
+!.env.example
+playwright-report/
+test-results/
+
+# Local exports may contain sensitive URLs. Documentation screenshots stay tracked.
+archivum_urls.txt
+archivum_records.json
+archivum_records.csv

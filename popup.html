@@ -2,69 +2,96 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Archivum</title>
-
-  <!-- Font Awesome v6 for icons -->
-  <link
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    rel="stylesheet"
-  />
-
-  <!-- Tailwind (optional - for utility classes) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Your enhanced styles -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <title>Archivum — Explore the archive</title>
   <link href="styles.css" rel="stylesheet" />
 </head>
 <body>
-  <div class="popup-wrapper">
-    <div class="popup-body">
-      <!-- Enhanced Header -->
-      <div class="header">
-        <i class="fas fa-server logo-icon" title="Archivum - Site Scanner"></i>
+  <div class="app">
+    <header class="header">
+      <div class="header-brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16v12H4zM3 4h18v4H3zM9 12h6" /></svg>
+        </span>
         <div>
-          <h1 class="popup-title">Archivum</h1>
-          <p class="text-sm text-muted opacity-75">Archive OSINT Tool</p>
+          <h1 class="brand-title">Archivum<span>.</span></h1>
+          <p class="brand-sub">A window into the web’s past</p>
         </div>
       </div>
-
-      <!-- Enhanced Scan Button -->
-      <button id="scanBtn" class="button-scan" title="Query the current website">
-        <i class="fas fa-search mr-2"></i>
-        Query Current URL
+      <button id="optionsToggle" class="icon-btn" type="button" aria-label="Query options" aria-expanded="false" aria-controls="optionsPanel" title="Query options">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4 7h7m4 0h5M4 17h3m4 0h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg>
       </button>
+    </header>
 
-      <!-- Results Container -->
-      <div id="results" class="results-list">
-        <!-- Initial welcome message -->
-        <div class="text-center text-gray-400 py-8">
-          <div class="mb-4">
-            <i class="fas fa-globe text-4xl mb-3 text-gray-500 opacity-50"></i>
-          </div>
-          <p class="mb-2 font-medium">Welcome to Archivum</p>
-          <p class="text-sm opacity-75">Discover archived versions of any website</p>
-          <div class="mt-4 text-xs opacity-50">
-            <i class="fas fa-info-circle mr-1"></i>
-            Click "Query Current URL" to get started
-          </div>
+    <section class="target-card" aria-label="Current website">
+      <div class="target-heading"><span class="eyebrow">Current website</span><span class="tab-label"><span></span> Active tab</span></div>
+      <div class="url-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></svg>
+        <span id="currentHost" class="url-value">Reading current tab…</span>
+      </div>
+      <div class="action-bar">
+        <button id="scanBtn" class="btn btn-primary" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          <span id="scanLabel">Query archive</span>
+          <span class="button-arrow" aria-hidden="true">↗</span>
+        </button>
+        <button id="refreshBtn" class="btn btn-secondary" type="button" title="Force a fresh query, bypassing the cache" aria-label="Force refresh, bypass cache">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6.1 6.3a8 8 0 0 1 13.6 5.2M4.3 12.5a8 8 0 0 0 13.6 5.2"/></svg>
+          Refresh
+        </button>
+      </div>
+    </section>
+
+    <section id="optionsPanel" class="options-panel hidden" aria-labelledby="optionsTitle">
+      <div class="panel-heading"><div><h2 id="optionsTitle">Refine your query</h2><p>Filters apply to your next archive query.</p></div><button id="closeOptions" class="close-btn" type="button" aria-label="Close query options">×</button></div>
+      <div class="options-grid">
+        <div class="option-group"><label for="optLimit">Result limit</label><input id="optLimit" type="number" class="option-input" value="5000" min="100" max="50000" step="100" /></div>
+        <div class="option-group option-check"><label class="check-label"><input id="optStatus200" type="checkbox" checked /><span>Successful pages only<span class="field-hint">HTTP status 200</span></span></label></div>
+        <div class="option-group"><label for="optFrom">From <span class="field-format">YYYYMMDD</span></label><input id="optFrom" type="text" class="option-input" placeholder="Any time" inputmode="numeric" maxlength="8" aria-describedby="dateHint" /></div>
+        <div class="option-group"><label for="optTo">To <span class="field-format">YYYYMMDD</span></label><input id="optTo" type="text" class="option-input" placeholder="Any time" inputmode="numeric" maxlength="8" aria-describedby="dateHint" /></div>
+      </div>
+      <p id="dateHint" class="options-hint">Leave dates blank to explore the full archive.</p>
+      <p id="optionsError" class="options-error hidden" role="alert"></p>
+    </section>
+
+    <section id="statsBar" class="stats-bar hidden" aria-label="Archive summary">
+      <div class="stat"><span class="stat-label">URLs found</span><span class="stat-val stat-total" id="statCount">0</span></div>
+      <div class="stat"><span class="stat-label">Earliest capture</span><span class="stat-val" id="statEarliest">—</span></div>
+      <div class="stat"><span class="stat-label">Latest capture</span><span class="stat-val" id="statLatest">—</span></div>
+    </section>
+
+    <main class="workspace" aria-labelledby="resultsTitle">
+      <div class="workspace-heading"><h2 id="resultsTitle">Archive explorer</h2><span id="statSource" class="stat-source">Ready</span></div>
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+        <input id="searchInput" type="search" class="search-input" placeholder="Search paths, files, or keywords…" aria-label="Search archived URLs" autocomplete="off" spellcheck="false" disabled />
+        <button id="clearSearch" class="clear-btn hidden" type="button" aria-label="Clear search" title="Clear search">×</button>
+        <kbd id="searchShortcut" class="search-shortcut" title="Focus search">/</kbd>
+      </div>
+      <div id="results" class="results" aria-busy="false">
+        <div class="empty-state">
+          <svg class="archive-illustration" viewBox="0 0 160 105" fill="none" aria-hidden="true">
+            <path d="M24 88h112" stroke="currentColor" opacity=".12"/>
+            <g transform="rotate(-9 80 50)"><rect x="48" y="15" width="65" height="68" rx="5" fill="var(--paper)" stroke="var(--border-strong)"/><path d="M59 29h33M59 37h40M59 45h23" stroke="var(--border-strong)" stroke-width="2" stroke-linecap="round"/></g>
+            <path d="M35 43a5 5 0 0 1 5-5h27l8 9h45a5 5 0 0 1 5 5v31a5 5 0 0 1-5 5H40a5 5 0 0 1-5-5Z" fill="var(--accent-soft)" stroke="var(--accent-line)"/>
+            <path d="M35 53h90" stroke="var(--accent-line)"/><rect x="69" y="63" width="22" height="9" rx="3" fill="var(--paper)" stroke="var(--accent-line)"/>
+            <path d="M132 24v10m-5-5h10M27 27v6m-3-3h6" stroke="var(--accent)" stroke-linecap="round" opacity=".6"/>
+          </svg>
+          <h3 class="empty-title">Every website has a history.</h3>
+          <p class="empty-sub">Uncover archived pages, forgotten files,<br />and the paths that came before.</p>
+          <span class="empty-hint">Start with a query above <span aria-hidden="true">↑</span></span>
         </div>
       </div>
-
-      <!-- Enhanced Export Button -->
-      <button id="exportBtn" class="button-export hidden" title="Download all URLs as text file">
-        <i class="fas fa-download mr-2"></i>
-        Export URLs
-      </button>
-
-      <!-- Footer info -->
-      <div class="text-center text-xs opacity-40 mt-2">
-        <i class="fas fa-database mr-1"></i>
-        Powered by Internet Archive
+      <div id="exportBar" class="export-bar hidden">
+        <span class="export-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg>Export all URLs</span>
+        <div class="export-actions"><button id="exportTxt" class="export-btn" type="button">TXT</button><button id="exportJson" class="export-btn" type="button">JSON</button><button id="exportCsv" class="export-btn" type="button">CSV</button></div>
       </div>
-    </div>
+    </main>
+
+    <footer class="footer"><span>Queries Internet Archive’s CDX API</span><span class="footer-note">Independent · Unaffiliated</span></footer>
+    <p id="statusMessage" class="sr-only" role="status" aria-live="polite"></p>
   </div>
-
   <script src="popup.js"></script>
 </body>
 </html>

@@ -1,16 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Archivum",
-  "version": "1.0",
+  "version": "1.1",
+  "description": "Independent website archive explorer that queries the Internet Archive Wayback Machine CDX API.",
   "permissions": ["storage", "activeTab"],
-  "background": {
-    "service_worker": "popup.js"
-  },
   "action": {
     "default_popup": "popup.html"
   },
   "host_permissions": [
-    "http://*/*",
-    "https://*/*"
+    "https://web.archive.org/*"
   ]
 }
