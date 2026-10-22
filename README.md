@@ -1,4 +1,4 @@
-# Archivum
+# Archivum, The Archive Site Scanner
 
 **Explore a website’s archived URLs from your browser.**
 
