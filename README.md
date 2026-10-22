@@ -136,4 +136,4 @@ Issues and pull requests are welcome. Include reproduction steps and your browse
 
 ## License
 
-[MIT](LICENSE) © 2026 Jon (saazwho). The license covers this project’s code and documentation; it does not grant rights to third-party archived content or Internet Archive branding.
+[MIT](LICENSE) The license covers this project’s code and documentation; it does not grant rights to third-party archived content or Internet Archive branding.
